@@ -57,7 +57,7 @@ install-aphrodite() {
 	python3 -m venv venv; source venv/bin/activate
 	pip install aphrodite-engine
 }
-
+echo "hello"
 basic
 
 # set up ggify
