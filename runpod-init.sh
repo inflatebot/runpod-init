@@ -64,7 +64,7 @@ install-aphrodite() {
 
 basic
 
-whiptail --title "Test" --infobox "Whiptail works!"
+whiptail --title "Test" --infobox "Whiptail works!" 78
 
 
 # set up ggify
