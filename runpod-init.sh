@@ -1,6 +1,6 @@
 #!/bin/bash
 # basic utils
-
+#https://raw.githubusercontent.com/inflatebot/runpod-init/refs/heads/main/runpod-init.sh
 basic() {
 	export HF_HOME=/workspace
 	unminimize
@@ -57,6 +57,8 @@ install-aphrodite() {
 	python3 -m venv venv; source venv/bin/activate
 	pip install aphrodite-engine
 }
+
+basic
 
 # set up ggify
 #cd /workspace
