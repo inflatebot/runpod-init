@@ -1,13 +1,12 @@
 #!/bin/bash
 # basic utils
 #https://raw.githubusercontent.com/inflatebot/runpod-init/refs/heads/main/runpod-init.sh
-basic() {
-	export HF_HOME=/workspace
-	unminimize
-	apt install -y nano tmux htop nvtop whiptail
-	pip install huggingface_hub[cli]
-	# setup HF
-	git config --global credential.helper store && huggingface-cli login
+export HF_HOME=/workspace
+unminimize
+apt install -y nano tmux htop nvtop whiptail
+# setup HF
+pip install huggingface_hub[cli]
+git config --global credential.helper store && huggingface-cli login
 }
 
 install-axolotl() {
