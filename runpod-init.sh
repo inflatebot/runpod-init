@@ -2,14 +2,8 @@
 # basic utils
 #https://raw.githubusercontent.com/inflatebot/runpod-init/refs/heads/main/runpod-init.sh
 
-basic() {
-	export HF_HOME=/workspace
-	yes | unminimize 
-	apt install -y nano tmux htop nvtop whiptail
-	pip install huggingface_hub[cli]
-	git config --global credential.helper store
-}
-
+#### Install Scripts
+## Tools of Trade
 install-axolotl() {
 	cd /workspace || exit
 	# burg time
@@ -26,8 +20,13 @@ install-llamafactory() {
 	cd /workspace || exit
 	git clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.git
 	cd LLaMA-Factory || exit
-	tput bel
-	echo -e "---\nSelect which extra dependencies, as a comma separated list with no spaces, to pass to pip from these available ones (torch and metrics are required):\ntorch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,awq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\n---\n"
+	deps=$(TERM=ansi whiptail \
+ 	--title "LlamaFactory Dependencies" \
+ 	--inputbox "Select which extra dependencies, as a comma separated list with no spaces, to pass to pip from these available ones (torch and metrics are required):\n\
+	\"torch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,\nawq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\"" 16 80 \
+	"torch,metrics,adam-mini,deepspeed,liger-kernel,bitsandbytes,hqq" \
+ 	3>&1 1>&2 2>&3) && echo "$deps"
+	#echo -e "---\nSelect which extra dependencies, as a comma separated list with no spaces, to pass to pip from these available ones (torch and metrics are required):\ntorch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,awq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\n---\n"
 	read -e -i "torch,metrics,adam-mini,deepspeed,liger-kernel,bitsandbytes,hqq" -p "$PS2 " deps
 }
 
@@ -40,6 +39,14 @@ install-llamacpp() {
 	# set up venv for lcpp
 	python3 -m venv venv; source venv/bin/activate
 	python3 -m pip install -r requirements.txt
+}
+
+install-mergekit() {
+	cd /workspace || exit
+	git clone https://github.com/arcee-ai/mergekit.git
+	cd mergekit || exit
+	python3 -m venv venv; source venv/bin/activate
+	pip install -e .
 }
 
 install-vllm() {
@@ -58,38 +65,86 @@ install-aphrodite() {
 	pip install aphrodite-engine
 }
 
-basic
+## Utilities
 
-UTILITIES=$(TERM=ansi whiptail --title "Utilities" --checklist \
+install-micro() {
+	cd /usr/bin || exit
+	curl https://getmic.ro | bash
+}
+
+install-bottom() {
+	asset_url=$(curl -s "https://api.github.com/repos/ClementTsang/bottom/releases/latest" | jq -r '.assets[] | select(.name | endswith("_amd64.deb") and (contains("musl") | not)) | .browser_download_url')
+	curl -L $asset_url -o /tmp/bottom-latest.deb
+	dpkg -i /tmp/bottom-latest.deb
+}
+
+install-gotop() {
+	asset_url=$(curl -s "https://api.github.com/repos/xxxserxxx/gotop/releases/latest" | jq -r '.assets[] | select(.name | endswith("_amd64.deb") and (contains("musl") | not)) | .browser_download_url')
+	curl -L $asset_url -o /tmp/gotop-latest.deb
+	dpkg -i /tmp/gotop-latest.deb
+}
+
+### Essentials
+
+export HF_HOME=/workspace
+yes | unminimize 
+apt install -y whiptail
+pip install huggingface_hub[cli]
+git config --global credential.helper store
+
+TOOLS=$(TERM=ansi whiptail --title "Tools" --checklist \
+"Pick some tools to install (select with Space, confirm with Enter)" 20 78 10 \
+"axolotl" "Axolotl" OFF \
+"llamafactory" "LlamaFactory" OFF \
+"llamacpp" "llama.cpp" OFF \
+"vllm" "vLLM" OFF \
+"aphrodite" "Aphrodite Engine" OFF \
+"mergekit" "MergeKit" OFF \
+3>&1 1>&2 2>&3)
+
+for tool in $TOOLS; do
+	eval "install-$tool"
+done
+
+UTILITIES=$(TERM=ansi whiptail \
+ --title "Utilities" \
+ --checklist \
 "Pick some utilities to install (select with Space, confirm with Enter)" 20 78 10 \
-"install-axolotl" "Axolotl" OFF \
-"install-llamafactory" "LlamaFactory" OFF \
-"install-llamacpp" "llama.cpp" OFF \
-"install-mergekit" "MergeKit" OFF \
-"install-vllm" "vLLM" OFF \
-"install-aphrodite" "Aphrodite Engine" OFF \
+"mosh" "The cooler SSH; requires mosh-client installed on your system" OFF \
+"tmux" "Terminal multiplexer; lets you have more terminal per terminal" OFF \
+"nano" "The only text editor you need (I promise)" OFF \
+"micro" "The cooler nano https://micro-editor.github.io/" OFF \
+"emacs" "Text editor for nerds" OFF \
+"vim" "Text editor for masochists" OFF \
+"htop" "Your dad's process monitor" OFF \
+"nvtop" "nvtop GPU monitor" OFF \
+"bottom" "Fizz's process monitor" OFF \
 3>&1 1>&2 2>&3)
 
 for utility in $UTILITIES; do
-	eval "$utility"
+	eval "install-$utility" || apt install -y "$utility" || echo "Don't know how to install $utility. Yell at Bot about it."
 done
 
-HFTOKEN=$(TERM=ansi whiptail \
- --title "HF Token" \
- --passwordbox "Paste your HF token here (it will be masked)" 8 78 \
- 3>&1 1>&2 2>&3)
+EXTRAS=$(TERM=ansi whiptail --title "Extras" --textbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 10 3>&1 1>&2 2>&3)
+apt install -y "$EXTRAS"
+
+#### HF Login
+
+HFTOKEN=$(TERM=ansi whiptail --title "HF Token" --passwordbox "Paste your HF token here (yes it will be masked, calm)" 8 78 3>&1 1>&2 2>&3)
 
 if [[ $HFTOKEN ]]; then
 	# this "yes" shouldn't be necessary but fuck it we ball
 	yes | huggingface-cli login --token "$HFTOKEN" --add-to-git-credential
 fi
 
+# TODO:
+# - add default tmux config
 
-#TERM=ansi whiptail --title "Test" --infobox "Whiptail works!" 8 80
+echo -e "All done! Oh, by the way, if you're not using SSHFS, it'll save you a lot of time.\n\
+Here's a command to make a mountpoint for the current pod and mount its filesystem there.\n\
+This creates 2 mount points in your home folder and mounts them with SSHFS. (SSHFS exists for Windows, but\
+this command probably only works on Linux. Soz.)\n\
 
-# set up ggify
-#cd /workspace
-#git clone https://github.com/akx/ggify.git
-#cd ggify
-#python3 -m pip install -e .
-#cd ..
+mkdir -p ~/runpod-mounts/runpod-$RUNPOD_POD_ID/{home,workspace} && \
+sshfs root@$RUNPOD_PUBLIC_IP:/root ~/runpod-mounts/runpod-$RUNPOD_POD_ID/home -p $RUNPOD_TCP_PORT_22 -o IdentityFile=~/.ssh/id_ed25519 && \
+sshfs root@$RUNPOD_PUBLIC_IP:/workspace ~/runpod-mounts/runpod-$RUNPOD_POD_ID/workspace -p $RUNPOD_TCP_PORT_22 -o IdentityFile=~/.ssh/id_ed25519"
