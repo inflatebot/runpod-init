@@ -64,7 +64,7 @@ install-aphrodite() {
 
 basic
 
-alias whiptail="TERM=ansi whiptail"
+alias whiptail=TERM=ansi whiptail
 whiptail --title "Test" --infobox "Whiptail works!" 8 80
 
 
