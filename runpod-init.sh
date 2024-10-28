@@ -64,8 +64,7 @@ install-aphrodite() {
 
 basic
 
-TERM=ansi whiptail --title "Test" --infobox "Whiptail works!" 8 80
-
+#TERM=ansi whiptail --title "Test" --infobox "Whiptail works!" 8 80
 
 # set up ggify
 #cd /workspace
@@ -74,3 +73,9 @@ TERM=ansi whiptail --title "Test" --infobox "Whiptail works!" 8 80
 #python3 -m pip install -e .
 #cd ..
 
+UTILITIES=$(TERM=ansi whiptail --title "Utilities" --checklist \
+"Pick some utilities to install (select with Space, confirm with Enter)" 20 78 4 \
+"AXOLOTL" "Axolotl" OFF \
+"LLAMAFACTORY" "LlamaFactory" OFF \
+"MERGEKIT" "MergeKit" OFF\
+3>&1 1>&2 2>&3)
