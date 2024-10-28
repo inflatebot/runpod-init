@@ -64,6 +64,9 @@ install-aphrodite() {
 
 basic
 
+whiptail --title "Test" --infobox "Whiptail works!"
+
+
 # set up ggify
 #cd /workspace
 #git clone https://github.com/akx/ggify.git
