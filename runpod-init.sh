@@ -148,7 +148,7 @@ for utility in $UTILITIES; do
 	eval "install-$utility" || apt update && apt install -y "${utility//\"}" || echo "Don't know how to install $utility. Yell at Bot about it."
 done
 
-EXTRAS=$(TERM=ansi whiptail --title "Extras" --inputbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 10 3>&1 1>&2 2>&3)
+EXTRAS=$(TERM=ansi whiptail --title "Extras" --inputbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 3>&1 1>&2 2>&3)
 apt install -y "$EXTRAS"
 
 #### HF Login
