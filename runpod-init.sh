@@ -109,13 +109,6 @@ apt install -y whiptail jq
 pip install huggingface_hub[cli]
 git config --global credential.helper store
 
-deps=$(TERM=ansi whiptail \
- 	--title "Tool Directory" \
- 	--inputbox "Select which extra dependencies, as a comma separated list with no spaces, to pass to pip from these available ones (torch and metrics are required):\n\
-	\"torch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,\nawq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\"" 16 80 \
-	"torch,metrics,adam-mini,deepspeed,liger-kernel,bitsandbytes,hqq" \
- 	3>&1 1>&2 2>&3)
-
 #TOOL_DIR=$(TERM=ansi whiptail --title "Tool Directory" --inputbox "Where should we put Python tools? \
 #Default is /workspace so that configs and artifacts you put in them stay persistent; but if you're providing configs \
 #externally (e.g. via SSHFS), it may make more sense to put them in container storage, \
