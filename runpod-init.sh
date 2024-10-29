@@ -90,7 +90,7 @@ install-gotop() {
 export HF_HOME=/workspace
 yes | unminimize 
 apt update
-apt install -y whiptail
+apt install -y whiptail jq
 pip install huggingface_hub[cli]
 git config --global credential.helper store
 
