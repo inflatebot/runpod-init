@@ -86,7 +86,22 @@ install-gotop() {
 }
 
 ### Essentials
-
+clear
+echo -e "\
+################################################################################\n\
+Welcome! This script helps set up the basic tools needed for the LLM work\n\
+we do at Allura. This script will do the following:\n\
+    - Set HF_HOME to '/workspace', so models get downloaded to the larger \n\
+	    (and persistent) volume storage.\n\
+    - Unminimize the environment to make more packages available.\n\
+    - Install 'jq' and 'whiptail' which will be used later in the script.\n\
+	- Provide some prompts to install Python tools and system utilities.\n\
+	- Ask you for your HF token and log you into HuggingFace.\n\
+	- Give you a script to use (on Linux only until I figure it out for Windows)\n\
+        to mount the container and volume storage locally via SSHFS.\n\
+Press Enter to continue.\n\
+################################################################################"
+read 
 export HF_HOME=/workspace
 yes | unminimize 
 apt update
@@ -138,6 +153,16 @@ HFTOKEN=$(TERM=ansi whiptail --title "HF Token" --passwordbox "Paste your HF tok
 if [[ $HFTOKEN ]]; then
 	# this "yes" shouldn't be necessary but fuck it we ball
 	yes | huggingface-cli login --token "$HFTOKEN" --add-to-git-credential
+fi
+
+# Set up tmux-sensible
+if [[ $(which tmux) ]]; then
+	if TERM=ansi whiptail --title "tmux-sensible" --yesno \
+	"You installed tmux; should we set up Tmux Plugin Manager and tmux-sensible to add some nice defaults?\n\
+	https://github.com/tmux-plugins/tmux-sensible\n" 8 78; then
+		mkdir -p ~/.tmux/plugins
+		git clone https://github.com/tmux-plugins/tpm 
+		
 fi
 
 # TODO:
