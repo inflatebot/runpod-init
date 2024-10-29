@@ -99,6 +99,8 @@ we do at Allura. This script will do the following:\n\
 	- Ask you for your HF token and log you into HuggingFace.\n\
 	- Give you a script to use (on Linux only until I figure it out for Windows)\n\
         to mount the container and volume storage locally via SSHFS.\n\
+!!!The script installs Python utilities in venvs, so to use one, cd to its !!!\n\
+!!!folder and do 'source venv/bin/activate'!!!
 Press Enter to continue.\n\
 ################################################################################"
 read 
@@ -181,7 +183,7 @@ SSHFS_STRING="mkdir -p ~/runpod-mounts/runpod-$RUNPOD_POD_ID/{home,workspace} &&
 TERM=screen-256color whiptail --title "Done" --msgbox --ok-button "Thanks" \
 "All done! Oh, by the way, if you're not using SSHFS, it'll save you a lot of time.\n\
 Here's a command to make a mountpoint for the current pod and mount its filesystem there.\n\
-This creates 2 mount points in your home folder and mounts them with SSHFS. (SSHFS exists for Windows, but\
+This creates 2 mount points in your home folder and mounts them with SSHFS. (SSHFS exists for Windows, but \
 this command probably only works on Linux. Soz.)\n\n\
 It's also been put in ~/sshfs-command.\n\n
 $SSHFS_STRING
