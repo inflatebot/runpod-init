@@ -26,8 +26,9 @@ install-llamafactory() {
 	\"torch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,\nawq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\"" 16 80 \
 	"torch,metrics,adam-mini,deepspeed,liger-kernel,bitsandbytes,hqq" \
  	3>&1 1>&2 2>&3) && echo "$deps"
+	python3 -m pip install -e ".[$deps]"
 	#echo -e "---\nSelect which extra dependencies, as a comma separated list with no spaces, to pass to pip from these available ones (torch and metrics are required):\ntorch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,awq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\n---\n"
-	read -e -i "torch,metrics,adam-mini,deepspeed,liger-kernel,bitsandbytes,hqq" -p "$PS2 " deps
+	#read -e -i "torch,metrics,adam-mini,deepspeed,liger-kernel,bitsandbytes,hqq" -p "$PS2 " deps
 }
 
 install-llamacpp() {
@@ -88,6 +89,7 @@ install-gotop() {
 
 export HF_HOME=/workspace
 yes | unminimize 
+apt update
 apt install -y whiptail
 pip install huggingface_hub[cli]
 git config --global credential.helper store
@@ -117,12 +119,13 @@ UTILITIES=$(TERM=ansi whiptail \
 "emacs" "Text editor for nerds" OFF \
 "vim" "Text editor for masochists" OFF \
 "htop" "Your dad's process monitor" OFF \
-"nvtop" "nvtop GPU monitor" OFF \
+"gotop" "The cool kids' process monitor" OFF \
 "bottom" "Fizz's process monitor" OFF \
+"nvtop" "Process monitor for GPUs" OFF \
 3>&1 1>&2 2>&3)
-
+echo $UTILITIES
 for utility in $UTILITIES; do
-	eval "install-$utility" || apt install -y "$utility" || echo "Don't know how to install $utility. Yell at Bot about it."
+	eval "install-$utility" || apt update && apt install -y "${utility//\"}" || echo "Don't know how to install $utility. Yell at Bot about it."
 done
 
 EXTRAS=$(TERM=ansi whiptail --title "Extras" --textbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 10 3>&1 1>&2 2>&3)
@@ -138,7 +141,9 @@ if [[ $HFTOKEN ]]; then
 fi
 
 # TODO:
-# - add default tmux config
+# - add default tmux config if it was installed
+# - set up conda
+# - prompt if utilities should be installed in workspace or home
 
 echo -e "All done! Oh, by the way, if you're not using SSHFS, it'll save you a lot of time.\n\
 Here's a command to make a mountpoint for the current pod and mount its filesystem there.\n\
