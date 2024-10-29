@@ -20,7 +20,7 @@ install-llamafactory() {
 	cd /workspace || exit
 	git clone --depth 1 https://github.com/hiyouga/LLaMA-Factory.git
 	cd LLaMA-Factory || exit
-	deps=$(TERM=ansi whiptail \
+	deps=$(TERM=screen-256color whiptail \
  	--title "LlamaFactory Dependencies" \
  	--inputbox "Select which extra dependencies, as a comma separated list with no spaces, to pass to pip from these available ones (torch and metrics are required):\n\
 	\"torch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,\nawq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\"" 16 80 \
@@ -114,7 +114,7 @@ git config --global credential.helper store
 #externally (e.g. via SSHFS), it may make more sense to put them in container storage, \
 #since you'll have to reinstall them when the pod is restarted anyway." 20 78 "/workspace" 3>&1 1>&2 2>&3)
 
-TOOLS=$(TERM=ansi whiptail --title "Tools" --checklist \
+TOOLS=$(TERM=screen-256color whiptail --title "Tools" --checklist \
 "Pick some tools to install (select with Space, confirm with Enter)" 20 78 10 \
 "axolotl" "Axolotl" OFF \
 "llamafactory" "LlamaFactory" OFF \
@@ -128,7 +128,7 @@ for tool in $TOOLS; do
 	eval "install-$tool"
 done
 
-UTILITIES=$(TERM=ansi whiptail \
+UTILITIES=$(TERM=screen-256color whiptail \
  --title "Utilities" \
  --checklist \
 "Pick some utilities to install (select with Space, confirm with Enter)" 20 78 10 \
@@ -148,12 +148,12 @@ for utility in $UTILITIES; do
 	eval "install-$utility" || apt update && apt install -y "${utility//\"}" || echo "Don't know how to install $utility. Yell at Bot about it."
 done
 
-EXTRAS=$(TERM=ansi whiptail --title "Extras" --inputbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 3>&1 1>&2 2>&3)
+EXTRAS=$(TERM=screen-256color whiptail --title "Extras" --inputbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 3>&1 1>&2 2>&3)
 apt install -y "$EXTRAS"
 
 #### HF Login
 
-HFTOKEN=$(TERM=ansi whiptail --title "HF Token" --passwordbox "Paste your HF token here (yes it will be masked, calm)" 8 78 3>&1 1>&2 2>&3)
+HFTOKEN=$(TERM=screen-256color whiptail --title "HF Token" --passwordbox "Paste your HF token here (yes it will be masked, calm)" 8 78 3>&1 1>&2 2>&3)
 
 if [[ $HFTOKEN ]]; then
 	# this "yes" shouldn't be necessary but fuck it we ball
@@ -162,7 +162,7 @@ fi
 
 # Ask to set up tmux plugin manager
 if [[ $(which tmux) ]]; then
-	if TERM=ansi whiptail --title "tmux-sensible" --yesno \
+	if TERM=screen-256color whiptail --title "tmux-sensible" --yesno \
 	"You installed tmux; should we set up Tmux Plugin Manager and tmux-sensible to add some nice defaults?\n\
 	https://github.com/tmux-plugins/tpm\n" 8 78; then
 		mkdir -p ~/.tmux/plugins
@@ -176,11 +176,16 @@ fi
 # - set up conda
 # - prompt if utilities should be installed in workspace or home
 
-echo -e "All done! Oh, by the way, if you're not using SSHFS, it'll save you a lot of time.\n\
+SSHFS_STRING="mkdir -p ~/runpod-mounts/runpod-$RUNPOD_POD_ID/{home,workspace} && sshfs root@$RUNPOD_PUBLIC_IP:/root ~/runpod-mounts/runpod-$RUNPOD_POD_ID/home -p $RUNPOD_TCP_PORT_22 -o IdentityFile=~/.ssh/id_ed25519 && sshfs root@$RUNPOD_PUBLIC_IP:/workspace ~/runpod-mounts/runpod-$RUNPOD_POD_ID/workspace -p $RUNPOD_TCP_PORT_22 -o IdentityFile=~/.ssh/id_ed25519"
+
+TERM=screen-256color whiptail --title "Done" --msgbox --ok-button "Thanks" \
+"All done! Oh, by the way, if you're not using SSHFS, it'll save you a lot of time.\n\
 Here's a command to make a mountpoint for the current pod and mount its filesystem there.\n\
 This creates 2 mount points in your home folder and mounts them with SSHFS. (SSHFS exists for Windows, but\
-this command probably only works on Linux. Soz.)\n\
+this command probably only works on Linux. Soz.)\n\n\
+It's also been put in ~/sshfs-command.\n\n
+$SSHFS_STRING
+" \
+ 20 100
 
-mkdir -p ~/runpod-mounts/runpod-$RUNPOD_POD_ID/{home,workspace} && \
-sshfs root@$RUNPOD_PUBLIC_IP:/root ~/runpod-mounts/runpod-$RUNPOD_POD_ID/home -p $RUNPOD_TCP_PORT_22 -o IdentityFile=~/.ssh/id_ed25519 && \
-sshfs root@$RUNPOD_PUBLIC_IP:/workspace ~/runpod-mounts/runpod-$RUNPOD_POD_ID/workspace -p $RUNPOD_TCP_PORT_22 -o IdentityFile=~/.ssh/id_ed25519"
+echo -e "###\nUse the following to mount /workspace and /root via SSHFS (assuming you used an ed25519 SSH key to log in, which you should): \n\n$SSHFS_STRING\n\n###" > ~/sshfs-command
