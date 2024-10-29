@@ -109,6 +109,18 @@ apt install -y whiptail jq
 pip install huggingface_hub[cli]
 git config --global credential.helper store
 
+deps=$(TERM=ansi whiptail \
+ 	--title "Tool Directory" \
+ 	--inputbox "Select which extra dependencies, as a comma separated list with no spaces, to pass to pip from these available ones (torch and metrics are required):\n\
+	\"torch,metrics,torch-npu,deepspeed,liger-kernel,bitsandbytes,hqq,eetq,gptq,\nawq,aqlm,vllm,galore,badam,adam-mini,qwen,modelscope,openmind,quality\"" 16 80 \
+	"torch,metrics,adam-mini,deepspeed,liger-kernel,bitsandbytes,hqq" \
+ 	3>&1 1>&2 2>&3)
+
+#TOOL_DIR=$(TERM=ansi whiptail --title "Tool Directory" --inputbox "Where should we put Python tools? \
+#Default is /workspace so that configs and artifacts you put in them stay persistent; but if you're providing configs \
+#externally (e.g. via SSHFS), it may make more sense to put them in container storage, \
+#since you'll have to reinstall them when the pod is restarted anyway." 20 78 "/workspace" 3>&1 1>&2 2>&3)
+
 TOOLS=$(TERM=ansi whiptail --title "Tools" --checklist \
 "Pick some tools to install (select with Space, confirm with Enter)" 20 78 10 \
 "axolotl" "Axolotl" OFF \
@@ -143,7 +155,7 @@ for utility in $UTILITIES; do
 	eval "install-$utility" || apt update && apt install -y "${utility//\"}" || echo "Don't know how to install $utility. Yell at Bot about it."
 done
 
-EXTRAS=$(TERM=ansi whiptail --title "Extras" --textbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 10 3>&1 1>&2 2>&3)
+EXTRAS=$(TERM=ansi whiptail --title "Extras" --inputbox "If you want to install any other packages, specify them here as a space-separated list." 20 78 10 3>&1 1>&2 2>&3)
 apt install -y "$EXTRAS"
 
 #### HF Login
@@ -155,14 +167,15 @@ if [[ $HFTOKEN ]]; then
 	yes | huggingface-cli login --token "$HFTOKEN" --add-to-git-credential
 fi
 
-# Set up tmux-sensible
+# Ask to set up tmux plugin manager
 if [[ $(which tmux) ]]; then
 	if TERM=ansi whiptail --title "tmux-sensible" --yesno \
 	"You installed tmux; should we set up Tmux Plugin Manager and tmux-sensible to add some nice defaults?\n\
-	https://github.com/tmux-plugins/tmux-sensible\n" 8 78; then
+	https://github.com/tmux-plugins/tpm\n" 8 78; then
 		mkdir -p ~/.tmux/plugins
-		git clone https://github.com/tmux-plugins/tpm 
-		
+		git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins
+		curl https://raw.githubusercontent.com/inflatebot/runpod-init/refs/heads/main/tmux.conf -o ~/.tmux.conf
+	fi
 fi
 
 # TODO:
