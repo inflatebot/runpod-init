@@ -67,6 +67,8 @@ install-aphrodite() {
 	pip install aphrodite-engine
 }
 
+
+
 ## Utilities
 
 install-micro() {
@@ -84,6 +86,11 @@ install-gotop() {
 	asset_url=$(curl -s "https://api.github.com/repos/xxxserxxx/gotop/releases/latest" | jq -r '.assets[] | select(.name | endswith("_amd64.deb") and (contains("musl") | not)) | .browser_download_url')
 	curl -L $asset_url -o /tmp/gotop-latest.deb
 	dpkg -i /tmp/gotop-latest.deb
+}
+
+install-cloudflared() {
+	curl -L https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64.deb -o /tmp/cloudflared-latest.deb
+	dpkg -i /tmp/cloudflared-latest.deb
 }
 
 ### Essentials
@@ -135,6 +142,7 @@ UTILITIES=$(TERM=screen-256color whiptail \
  --title "Utilities" \
  --checklist \
 "Pick some utilities to install (select with Space, confirm with Enter)" 20 78 10 \
+"cloudflared" "Needed to make Cloudflare tunnels; highly recommended" OFF \
 "mosh" "The cooler SSH; requires mosh-client installed on your system" OFF \
 "tmux" "Terminal multiplexer; lets you have more terminal per terminal" OFF \
 "nano" "The only text editor you need (I promise)" OFF \
