@@ -115,7 +115,8 @@ read
 export HF_HOME=/workspace
 yes | unminimize 
 apt update
-apt install -y whiptail jq
+apt install -y whiptail jq python3-venv
+# apparently python3-venv isn't an assumption on the pytorch 2.4 image anymore??? dumb
 pip install huggingface_hub[cli]
 git config --global credential.helper store
 
